@@ -33,36 +33,36 @@ model = load_model('D:/Jen/Documents/Dissertation/Serve_Models/UK_weights3_test.
 @app.route('/api/image', methods=['POST'])
 def upload_image():
     # check if the post request has the file part
-    if 'image' not in request.files:
-        return jsonify({'error':'No posted image. Should be attribute named image.'})
-    file = request.files['image']
-
-    if file.filename == '':
-        return jsonify({'error':'Empty filename submitted.'})
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        print("***2:"+filename)
-        #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        x = []
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
-        img = Image.open(BytesIO(file.read()))
-        img.load()
-        img = img.resize((IMAGE_WIDTH,IMAGE_HEIGHT),Image.ANTIALIAS)
-        x = image.img_to_array(img)
-        x = np.expand_dims(x, axis=0)
-        pred = model.predict(x)
+    if len(request.files) < 1:
+        return jsonify({'error':'No posted images.'})
+    files = request.files
+    confidences = [0 for i in range(19)]
+    for file in files.values():
+        if file.filename == '':
+            return jsonify({'error':'Empty filename submitted.'})
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            print("Processing:"+filename)
+            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            x = []
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+            img = Image.open(BytesIO(file.read()))
+            img.load()
+            img = img.resize((IMAGE_WIDTH,IMAGE_HEIGHT),Image.ANTIALIAS)
+            x = image.img_to_array(img)
+            x = np.expand_dims(x, axis=0)
+            pred = model.predict(x)
+            
+            for i in range(len(pred)):
+                confidences = np.add(pred[i], confidences)
+        else:
+            return jsonify({'error':'File has invalid extension'})
         
-        confidences = [0 for i in range(19)]
-        for i in range(len(pred)):
-            confidences = np.add(pred[i], confidences)
+    indexes = np.argsort(confidences)[::-1]
+    result = [CLASS_NAMES[i] for i in indexes]
         
-        indexes = np.argsort(confidences)[::-1]
-        result = [CLASS_NAMES[i] for i in indexes]
-        
-        response = {'pred':result}
-        return jsonify(response)
-    else:
-        return jsonify({'error':'File has invalid extension'})
+    response = {'pred':result}
+    return jsonify(response)
 
 if __name__ == '__main__':
     app.run(host= '0.0.0.0',debug=True)

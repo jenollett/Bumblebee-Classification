@@ -59,7 +59,7 @@ def upload_image():
             return jsonify({'error':'File has invalid extension'})
         
     indexes = np.argsort(confidences)[::-1]
-    result = [CLASS_NAMES[i] for i in indexes]
+    result = [[CLASS_NAMES[i], (confidences[i]/len(request.files))] for i in indexes]
         
     response = {'pred':result}
     return jsonify(response)

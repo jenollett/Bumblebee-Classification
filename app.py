@@ -28,7 +28,7 @@ def allowed_file(filename):
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-model = load_model('D:/Jen/Documents/Dissertation/Serve_Models/UK_weights3_test.h5')
+model = load_model('D:/Jen/Documents/Dissertation/Serve_Models/UK_weights3')
 
 @app.route('/api/image', methods=['POST'])
 def upload_image():

@@ -6,14 +6,12 @@ import numpy as np
 import os
 from flask import Flask, request, redirect, url_for
 from werkzeug.utils import secure_filename
-from tensorflow.keras.applications import MobileNet
 from PIL import Image, ImageFile
 from io import BytesIO
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.mobilenet import preprocess_input
-from tensorflow.keras.applications.mobilenet import decode_predictions
 
 UPLOAD_FOLDER = ''
+MODEL_PATH = os.getcwd()
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg'])
 IMAGE_WIDTH = 224
 IMAGE_HEIGHT = 224
@@ -28,7 +26,7 @@ def allowed_file(filename):
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-model = load_model('D:/Jen/Documents/Dissertation/Serve_Models/UK_weights3')
+model = load_model(os.path.join(MODEL_PATH, 'home/ubuntu/flaskapp/UK_weights3'))
 
 @app.route('/api/image', methods=['POST'])
 def upload_image():
